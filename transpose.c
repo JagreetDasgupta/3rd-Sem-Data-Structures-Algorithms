@@ -1,134 +1,105 @@
 #include <stdio.h>
 #include <stdlib.h>
-
-typedef struct
+void swap(int *a, int *b)
 {
-    int row;
-    int col;
-    int value;
-} Triple;
-
-// Function to convert a matrix into its sparse representation
-Triple *convertToSparse(int **matrix, int rows, int cols, int *sparseSize)
+    int c = *a;
+    *a = *b;
+    *b = c;
+}
+int main()
 {
-    int nonZeroCount = 0;
-    for (int i = 0; i < rows; i++)
+    int r, c, size = 0, k = 1;
+    printf("Enter the number of Rows and Columns in the Matrix \n");
+    scanf("%d%d", &r, &c);
+    int **mat = (int **)malloc(r * sizeof(int *));
+    for (int i = 0; i < r; i++)
     {
-        for (int j = 0; j < cols; j++)
+        mat[i] = (int *)malloc(c * sizeof(int));
+    }
+    printf("Enter the elements in the matrix\n");
+    for (int i = 0; i < r; i++)
+    {
+        for (int j = 0; j < c; j++)
         {
-            if (matrix[i][j] != 0)
-            {
-                nonZeroCount++;
-            }
+            scanf("%d", &mat[i][j]);
         }
     }
-
-    *sparseSize = nonZeroCount;
-    Triple *sparse = (Triple *)malloc(nonZeroCount * sizeof(Triple));
-    int k = 0;
-
-    for (int i = 0; i < rows; i++)
+    printf("Input Matrix: ");
+    printf("\n");
+    for (int i = 0; i < r; i++)
     {
-        for (int j = 0; j < cols; j++)
+        for (int j = 0; j < c; j++)
         {
-            if (matrix[i][j] != 0)
+            printf("%d ", mat[i][j]);
+            if (mat[i][j] != 0)
             {
-                sparse[k].row = i;
-                sparse[k].col = j;
-                sparse[k].value = matrix[i][j];
+                size++;
+            }
+        }
+        printf("\n");
+    }
+    int sp[size + 1][3], ts[size + 1][3];
+    sp[0][0] = r;
+    sp[0][1] = c;
+    sp[0][2] = size;
+    for (int i = 0; i < r; i++)
+    {
+        for (int j = 0; j < c; j++)
+        {
+            if (mat[i][j] != 0)
+            {
+                sp[k][0] = i;
+                sp[k][1] = j;
+                sp[k][2] = mat[i][j];
                 k++;
             }
         }
     }
-
-    return sparse;
-}
-
-// Function to calculate the transpose of the matrix in sparse representation
-Triple *transposeSparse(Triple *sparse, int sparseSize, int rows, int cols, int *transSparseSize)
-{
-    *transSparseSize = sparseSize;
-    Triple *transSparse = (Triple *)malloc(sparseSize * sizeof(Triple));
-
-    int *rowTermsCount = (int *)calloc(cols, sizeof(int));
-    int *startingPos = (int *)malloc(cols * sizeof(int));
-
-    // Calculate the number of terms in each column
-    for (int i = 0; i < sparseSize; i++)
+    printf("Triplet is : \n");
+    for (int i = 0; i < size + 1; i++)
     {
-        rowTermsCount[sparse[i].col]++;
-    }
-
-    // Calculate starting position for each column
-    startingPos[0] = 0;
-    for (int i = 1; i < cols; i++)
-    {
-        startingPos[i] = startingPos[i - 1] + rowTermsCount[i - 1];
-    }
-
-    // Calculate the transpose of the matrix
-    for (int i = 0; i < sparseSize; i++)
-    {
-        int col = sparse[i].col;
-        int pos = startingPos[col];
-        transSparse[pos].row = sparse[i].col;
-        transSparse[pos].col = sparse[i].row;
-        transSparse[pos].value = sparse[i].value;
-        startingPos[col]++;
-    }
-
-    free(rowTermsCount);
-    free(startingPos);
-    return transSparse;
-}
-
-// Function to display the sparse representation of a matrix
-void displaySparse(Triple *sparse, int sparseSize)
-{
-    printf("Sparse Representation:\n");
-    printf("Row\tColumn\tValue\n");
-    for (int i = 0; i < sparseSize; i++)
-    {
-        printf("%d\t%d\t%d\n", sparse[i].row, sparse[i].col, sparse[i].value);
-    }
-}
-
-int main()
-{
-    int rows, cols;
-    printf("Enter the number of rows and columns of the matrix: ");
-    scanf("%d %d", &rows, &cols);
-
-    int **matrix = (int *)malloc(rows * sizeof(int));
-    for (int i = 0; i < rows; i++)
-    {
-        matrix[i] = (int *)malloc(cols * sizeof(int));
-    }
-
-    printf("Enter the elements of the matrix:\n");
-    for (int i = 0; i < rows; i++)
-    {
-        for (int j = 0; j < cols; j++)
+        for (int j = 0; j < 3; j++)
         {
-            scanf("%d", &matrix[i][j]);
+            printf("%d ", sp[i][j]);
+        }
+        printf("\n");
+    }
+    for (int i = 0; i < size + 1; i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
+            ts[i][0] = sp[i][1];
+            ts[i][1] = sp[i][0];
+            ts[i][2] = sp[i][2];
         }
     }
-
-    int sparseSize, transSparseSize;
-    Triple *sparse = convertToSparse(matrix, rows, cols, &sparseSize);
-    displaySparse(sparse, sparseSize);
-
-    Triple *transSparse = transposeSparse(sparse, sparseSize, rows, cols, &transSparseSize);
-    displaySparse(transSparse, transSparseSize);
-
-    // Free allocated memory
-    for (int i = 0; i < rows; i++)
+    for (int i = 0; i < size; i++)
     {
-        free(matrix[i]);
+        for (int j = 1; j < size - i; j++)
+        {
+            if (ts[j][0] > ts[j + 1][0])
+            {
+                swap(&ts[j][0], &ts[j + 1][0]);
+                swap(&ts[j][1], &ts[j + 1][1]);
+                swap(&ts[j][2], &ts[j + 1][2]);
+            }
+        }
     }
-    free(matrix);
-    free(sparse);
-    free(transSparse);
-
-    return 0;
+    printf("Transpose of Triplet is : \n");
+    for (int i = 0; i < size + 1; i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
+            printf("%d ", ts[i][j]);
+        }
+        printf("\n");
+    }
+    if (3 * (size + 1) < (c * r))
+    {
+        printf("Sparse is Beneficial\n");
+    }
+    else
+    {
+        printf("Sparse is Not Benificial\n");
+    }
 }
