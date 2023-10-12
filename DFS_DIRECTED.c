@@ -94,11 +94,12 @@ void dfs(struct Graph* graph, char* color, int* pi, int* d, int* f)
 
 void printpath(struct Graph* graph, int v, int* pi)
 {
-    if (v == -1)
-        return;
-
-    printpath(graph, pi[v], pi);
-    printf(" -> %d", v);
+    if (pi[v] == -1)
+        printf(" %d",v);
+    else{
+        printpath(graph, pi[v], pi);
+        printf(" -> %d", v);
+    }    
 }
 
 int main()
